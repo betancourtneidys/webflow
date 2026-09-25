@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Webflow Cloud / OpenNext build output and generated config.
+    ".open-next/**",
+    ".tmp/**",
+    ".wrangler/**",
+    "next.config.webflow.ts",
   ]),
 ]);
 
