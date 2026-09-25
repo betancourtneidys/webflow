@@ -382,11 +382,15 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
               setToast(false);
               setDialog(true);
             }}
-            className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-full border border-accent/40 bg-surface/95 py-2 pl-4 pr-2 text-sm shadow-2xl backdrop-blur"
+            // Phones: full-width card; sm+: centered pill. Kept above Webflow's
+            // bottom-right "Made in Webflow" badge until the screen is wide enough.
+            className="fixed inset-x-4 bottom-16 z-[45] mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-accent/40 bg-surface/95 py-2.5 pl-4 pr-2.5 text-sm shadow-2xl backdrop-blur sm:inset-x-auto sm:left-1/2 sm:w-max sm:max-w-none sm:-translate-x-1/2 sm:rounded-full sm:py-2 sm:pr-2 lg:bottom-6"
           >
-            <Sparkles className="size-4 text-accent" />
-            You have enough evidence to form a hypothesis.
-            <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-bg">Build hypothesis</span>
+            <Sparkles className="size-4 shrink-0 text-accent" />
+            <span className="flex-1 text-left leading-snug">You have enough evidence to form a hypothesis.</span>
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-bg">
+              Build hypothesis
+            </span>
           </motion.button>
         )}
       </AnimatePresence>
