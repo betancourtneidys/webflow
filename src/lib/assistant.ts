@@ -19,7 +19,13 @@ const RESOURCE_KEYWORDS: Record<Resource["kind"], string[]> = {
   oidc: ["oidc", "token", "claim", "claims", "sub"],
   sts: ["sts", "cloudtrail", "assumerole", "assume"],
   iam: ["iam", "role", "trust", "policy"],
-  ecs: ["ecs", "service", "production"],
+  ecs: ["ecs", "service", "production", "task", "tasks", "fleet"],
+  dns: ["dns", "route 53", "route53", "record", "weighted", "weight"],
+  cdn: ["cloudfront", "cdn", "edge", "cache"],
+  events: ["eventbridge", "schedule", "scheduler", "cron", "nightly"],
+  secrets: ["secret", "secrets", "rotation", "rotate", "password", "credentials"],
+  kms: ["kms", "key policy", "decrypt"],
+  scaling: ["autoscaling", "auto scaling", "scale", "scaling"],
 };
 
 const has = (text: string, words: string[]) =>
@@ -61,7 +67,7 @@ export function fallbackAnswer(incident: Incident, req: Omit<AssistantRequest, "
     }
     return f.nextStepByResource[next.id] ?? `Open ${next.name} on the diagram.`;
   }
-  if (has(q, ["mean", "means", "meaning", "what does", "explain", "metric"])) {
+  if (has(q, ["mean", "means", "meaning", "what does", "what is a", "explain", "metric"])) {
     return f.metrics;
   }
   const mentioned = incident.resources.find((r) => has(q, RESOURCE_KEYWORDS[r.kind]));
@@ -106,7 +112,14 @@ export function buildSystemPrompt(incident: Incident, req: AssistantRequest) {
     "",
   ];
 
-  if (reveal) {
+  if (reveal && incident.suspects) {
+    // Harder cases: the player has to name the root cause themselves, so the
+    // prompt never contains it.
+    lines.push(
+      "The user has enough evidence, but in this case they must identify the root cause themselves. Never name or confirm a root cause.",
+      "Help them reason: point out which signals to compare (timestamps, percentages, which components differ) and ask one guiding question.",
+    );
+  } else if (reveal) {
     lines.push(
       `The user has enough evidence. If they ask about the root cause, you may confirm it: ${incident.rootCause.hypothesis}`,
       "Do not tell them which remediation option to pick; let them decide in the resolution step.",

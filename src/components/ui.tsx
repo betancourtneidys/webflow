@@ -1,14 +1,20 @@
 import {
   Boxes,
+  CalendarClock,
   Database,
   GitBranch,
   GitCommitHorizontal,
   Globe,
+  Key,
   KeyRound,
   Layers,
+  LockKeyhole,
   Network,
+  RadioTower,
   ScrollText,
   ShieldCheck,
+  Signpost,
+  TrendingUp,
   Zap,
   type LucideIcon,
 } from "lucide-react";
@@ -75,6 +81,12 @@ const KIND_ICON: Record<ResourceKind, LucideIcon> = {
   sts: ScrollText,
   iam: ShieldCheck,
   ecs: Boxes,
+  dns: Signpost,
+  cdn: RadioTower,
+  events: CalendarClock,
+  secrets: LockKeyhole,
+  kms: Key,
+  scaling: TrendingUp,
 };
 
 export function KindIcon({ kind, className }: { kind: ResourceKind; className?: string }) {

@@ -26,7 +26,7 @@ export function ResolvedScreen({ incident, next, elapsed, evidence, attempts, re
   const stats = [
     { label: "Investigation time", value: elapsed },
     { label: "Evidence collected", value: `${evidence} / ${incident.evidence.length}` },
-    { label: "Fix attempts", value: String(attempts) },
+    { label: "Attempts", value: String(attempts) },
   ];
 
   return (

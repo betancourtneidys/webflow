@@ -11,7 +11,13 @@ export type ResourceKind =
   | "oidc"
   | "sts"
   | "iam"
-  | "ecs";
+  | "ecs"
+  | "dns"
+  | "cdn"
+  | "events"
+  | "secrets"
+  | "kms"
+  | "scaling";
 
 export interface Metric {
   label: string;
@@ -81,8 +87,8 @@ export interface Incident {
   short: string;
   pattern: string;
   severity: "critical" | "high";
-  /** 1 Rookie · 2 Detective · 3 Inspector */
-  difficulty: 1 | 2 | 3;
+  /** 1 Rookie · 2 Detective · 3 Inspector · 4 Chief */
+  difficulty: 1 | 2 | 3 | 4;
   startedAt: string;
   startedAgo: string;
   summary: string;
@@ -99,6 +105,12 @@ export interface Incident {
     chain: string[];
     confidence: "High" | "Medium";
   };
+  /**
+   * Harder cases: the player must pick the root cause among these before it is
+   * revealed. Without it, the hypothesis is shown directly. The assistant never
+   * names the root cause for cases that have suspects.
+   */
+  suspects?: ResolutionOption[];
   question: string;
   options: ResolutionOption[];
   lesson: string;

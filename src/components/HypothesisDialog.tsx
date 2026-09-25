@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, Check, Sparkles, X } from "lucide-react";
-import type { Incident } from "@/lib/types";
+import type { Incident, ResolutionOption } from "@/lib/types";
 
 interface Props {
   incident: Incident;
@@ -11,11 +11,86 @@ interface Props {
   onResolved: (attempts: number) => void;
 }
 
-export function HypothesisDialog({ incident, onClose, onResolved }: Props) {
-  const [step, setStep] = useState<"hypothesis" | "action">("hypothesis");
+type Step = "suspect" | "hypothesis" | "action";
+
+/** Multiple-choice list shared by the "suspect" and "fix" steps. */
+function Choices({
+  options,
+  onWrong,
+  onCorrect,
+}: {
+  options: ResolutionOption[];
+  onWrong: () => void;
+  onCorrect: () => void;
+}) {
   const [picked, setPicked] = useState<string | null>(null);
   const [wrong, setWrong] = useState<string[]>([]);
-  const choice = incident.options.find((o) => o.id === picked);
+  const solved = options.some((o) => o.correct && o.id === picked);
+
+  const pick = (option: ResolutionOption) => {
+    if (solved) return;
+    setPicked(option.id);
+    if (option.correct) {
+      onCorrect();
+    } else if (!wrong.includes(option.id)) {
+      setWrong((w) => [...w, option.id]);
+      onWrong();
+    }
+  };
+
+  return (
+    <div className="mt-5 space-y-2">
+      {options.map((o, i) => {
+        const isPicked = picked === o.id;
+        const isWrong = wrong.includes(o.id);
+        const isRight = isPicked && o.correct;
+        return (
+          <motion.button
+            key={o.id}
+            onClick={() => pick(o)}
+            disabled={isWrong || solved}
+            animate={isPicked && !o.correct ? { x: [0, -6, 6, -4, 4, 0] } : {}}
+            transition={{ duration: 0.35 }}
+            className={[
+              "flex w-full items-start gap-3 rounded-xl border p-3.5 text-left transition",
+              isRight
+                ? "border-healthy/60 bg-healthy/[0.08]"
+                : isWrong
+                  ? "border-critical/30 bg-critical/[0.04] opacity-70"
+                  : "border-line-strong hover:border-white/25 hover:bg-white/[0.02]",
+            ].join(" ")}
+          >
+            <span
+              className={`grid size-6 shrink-0 place-items-center rounded-md border font-mono text-xs ${isRight ? "border-healthy bg-healthy text-bg" : isWrong ? "border-critical/50 text-critical" : "border-line-strong text-muted"}`}
+            >
+              {isRight ? <Check className="size-3.5" strokeWidth={3} /> : isWrong ? <X className="size-3.5" /> : String.fromCharCode(65 + i)}
+            </span>
+            <span className="min-w-0">
+              <span className="block text-[14px] font-medium">{o.label}</span>
+              <span className="mt-0.5 block text-[12.5px] text-muted">{o.detail}</span>
+              {(isWrong || isRight) && (
+                <motion.span
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className={`mt-2 block text-[12.5px] ${isRight ? "text-healthy" : "text-critical/90"}`}
+                >
+                  {o.feedback}
+                </motion.span>
+              )}
+            </span>
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+}
+
+export function HypothesisDialog({ incident, onClose, onResolved }: Props) {
+  const steps: Step[] = incident.suspects ? ["suspect", "hypothesis", "action"] : ["hypothesis", "action"];
+  const [step, setStep] = useState<Step>(steps[0]);
+  const [misses, setMisses] = useState(0);
+  const [fixed, setFixed] = useState(false);
+  const labels: Record<Step, string> = { suspect: "Suspect", hypothesis: "Hypothesis", action: "Resolution" };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -23,16 +98,7 @@ export function HypothesisDialog({ incident, onClose, onResolved }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const pick = (id: string) => {
-    if (choice?.correct) return;
-    const option = incident.options.find((o) => o.id === id)!;
-    setPicked(id);
-    if (option.correct) {
-      setTimeout(() => onResolved(wrong.length + 1), 1400);
-    } else if (!wrong.includes(id)) {
-      setWrong((w) => [...w, id]);
-    }
-  };
+  const slide = { initial: { opacity: 0, x: 12 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -12 } };
 
   return (
     <motion.div
@@ -54,9 +120,14 @@ export function HypothesisDialog({ incident, onClose, onResolved }: Props) {
       >
         <div className="flex items-center justify-between border-b border-line px-6 py-4">
           <div className="flex items-center gap-3 text-xs text-muted">
-            <span className={step === "hypothesis" ? "text-fg" : ""}>1 · Hypothesis</span>
-            <span className="h-px w-6 bg-line-strong" />
-            <span className={step === "action" ? "text-fg" : ""}>2 · Resolution</span>
+            {steps.map((s, i) => (
+              <span key={s} className="flex items-center gap-3">
+                {i > 0 && <span className="h-px w-6 bg-line-strong" />}
+                <span className={step === s ? "text-fg" : ""}>
+                  {i + 1} · {labels[s]}
+                </span>
+              </span>
+            ))}
           </div>
           <button onClick={onClose} className="rounded-md p-1 text-muted hover:bg-white/5 hover:text-fg" aria-label="Close">
             <X className="size-4" />
@@ -64,11 +135,23 @@ export function HypothesisDialog({ incident, onClose, onResolved }: Props) {
         </div>
 
         <AnimatePresence mode="wait">
-          {step === "hypothesis" ? (
-            <motion.div key="h" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} className="p-6">
+          {step === "suspect" && incident.suspects && (
+            <motion.div key="s" {...slide} className="p-6">
+              <h2 className="text-2xl font-semibold tracking-tight">Which explanation fits the evidence?</h2>
+              <p className="mt-1.5 text-sm text-muted">Several things look suspicious. Only one explains every signal.</p>
+              <Choices
+                options={incident.suspects}
+                onWrong={() => setMisses((m) => m + 1)}
+                onCorrect={() => setTimeout(() => setStep("hypothesis"), 1300)}
+              />
+            </motion.div>
+          )}
+
+          {step === "hypothesis" && (
+            <motion.div key="h" {...slide} className="p-6">
               <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-accent">
                 <Sparkles className="size-3.5" />
-                Likely root cause
+                {incident.suspects ? "Root cause confirmed" : "Likely root cause"}
               </div>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight">{incident.rootCause.title}</h2>
               <p className="mt-3 text-[14.5px] leading-relaxed text-fg/80">{incident.rootCause.hypothesis}</p>
@@ -114,56 +197,21 @@ export function HypothesisDialog({ incident, onClose, onResolved }: Props) {
                 <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
               </button>
             </motion.div>
-          ) : (
-            <motion.div key="a" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} className="p-6">
+          )}
+
+          {step === "action" && (
+            <motion.div key="a" {...slide} className="p-6">
               <h2 className="text-2xl font-semibold tracking-tight">{incident.question}</h2>
               <p className="mt-1.5 text-sm text-muted">Pick the change that fixes the root cause, not just the symptom.</p>
-
-              <div className="mt-5 space-y-2">
-                {incident.options.map((o, i) => {
-                  const isPicked = picked === o.id;
-                  const isWrong = wrong.includes(o.id);
-                  const isRight = isPicked && o.correct;
-                  return (
-                    <motion.button
-                      key={o.id}
-                      onClick={() => pick(o.id)}
-                      disabled={isWrong || !!choice?.correct}
-                      animate={isPicked && !o.correct ? { x: [0, -6, 6, -4, 4, 0] } : {}}
-                      transition={{ duration: 0.35 }}
-                      className={[
-                        "flex w-full items-start gap-3 rounded-xl border p-3.5 text-left transition",
-                        isRight
-                          ? "border-healthy/60 bg-healthy/[0.08]"
-                          : isWrong
-                            ? "border-critical/30 bg-critical/[0.04] opacity-70"
-                            : "border-line-strong hover:border-white/25 hover:bg-white/[0.02]",
-                      ].join(" ")}
-                    >
-                      <span
-                        className={`grid size-6 shrink-0 place-items-center rounded-md border font-mono text-xs ${isRight ? "border-healthy bg-healthy text-bg" : isWrong ? "border-critical/50 text-critical" : "border-line-strong text-muted"}`}
-                      >
-                        {isRight ? <Check className="size-3.5" strokeWidth={3} /> : isWrong ? <X className="size-3.5" /> : String.fromCharCode(65 + i)}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-[14px] font-medium">{o.label}</span>
-                        <span className="mt-0.5 block text-[12.5px] text-muted">{o.detail}</span>
-                        {(isWrong || isRight) && (
-                          <motion.span
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            className={`mt-2 block text-[12.5px] ${isRight ? "text-healthy" : "text-critical/90"}`}
-                          >
-                            {o.feedback}
-                          </motion.span>
-                        )}
-                      </span>
-                    </motion.button>
-                  );
-                })}
-              </div>
-
-              {!choice?.correct && (
+              <Choices
+                options={incident.options}
+                onWrong={() => setMisses((m) => m + 1)}
+                onCorrect={() => {
+                  setFixed(true);
+                  setTimeout(() => onResolved(misses + 1), 1400);
+                }}
+              />
+              {!fixed && (
                 <button onClick={() => setStep("hypothesis")} className="mt-4 text-xs text-muted hover:text-fg">
                   ← Back to hypothesis
                 </button>

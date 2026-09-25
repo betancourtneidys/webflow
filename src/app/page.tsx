@@ -128,7 +128,7 @@ export default function Home() {
           <div className="relative flex flex-col items-center">
             <Logo size={40} />
             <h2 className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">The pager just went off.</h2>
-            <p className="mt-3 text-muted">Three incidents are waiting. The clock starts when you click.</p>
+            <p className="mt-3 text-muted">{incidents.length} incidents are waiting. The clock starts when you click.</p>
             <Link
               href="/incident/production-api-degraded"
               className="group mt-8 inline-flex items-center gap-2 rounded-xl bg-fg px-5 py-3 text-sm font-semibold text-bg transition hover:bg-white"

@@ -5,13 +5,13 @@ import type { Incident } from "@/lib/types";
 import { formatElapsed } from "@/lib/format";
 import { useSolved } from "@/lib/progress";
 
-const RANKS = { 1: "Rookie", 2: "Detective", 3: "Inspector" } as const;
+const RANKS = { 1: "Rookie", 2: "Detective", 3: "Inspector", 4: "Chief" } as const;
 
 export function Difficulty({ level }: { level: Incident["difficulty"] }) {
   return (
     <span className="flex items-center gap-2 text-[12px] text-muted">
       <span className="flex gap-0.5" aria-hidden>
-        {[1, 2, 3].map((i) => (
+        {[1, 2, 3, 4].map((i) => (
           <span key={i} className={`size-1.5 rounded-full ${i <= level ? "bg-accent" : "bg-white/10"}`} />
         ))}
       </span>
