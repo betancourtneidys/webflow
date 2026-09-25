@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, Check, Sparkles, X } from "lucide-react";
 import type { Incident, ResolutionOption } from "@/lib/types";
+import { useT } from "./LangProvider";
 
 interface Props {
   incident: Incident;
@@ -90,7 +91,8 @@ export function HypothesisDialog({ incident, onClose, onResolved }: Props) {
   const [step, setStep] = useState<Step>(steps[0]);
   const [misses, setMisses] = useState(0);
   const [fixed, setFixed] = useState(false);
-  const labels: Record<Step, string> = { suspect: "Suspect", hypothesis: "Hypothesis", action: "Resolution" };
+  const t = useT();
+  const labels: Record<Step, string> = t.hypothesis.steps;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -129,7 +131,7 @@ export function HypothesisDialog({ incident, onClose, onResolved }: Props) {
               </span>
             ))}
           </div>
-          <button onClick={onClose} className="rounded-md p-1 text-muted hover:bg-white/5 hover:text-fg" aria-label="Close">
+          <button onClick={onClose} className="rounded-md p-1 text-muted hover:bg-white/5 hover:text-fg" aria-label={t.hypothesis.close}>
             <X className="size-4" />
           </button>
         </div>
@@ -137,8 +139,8 @@ export function HypothesisDialog({ incident, onClose, onResolved }: Props) {
         <AnimatePresence mode="wait">
           {step === "suspect" && incident.suspects && (
             <motion.div key="s" {...slide} className="p-6">
-              <h2 className="text-2xl font-semibold tracking-tight">Which explanation fits the evidence?</h2>
-              <p className="mt-1.5 text-sm text-muted">Several things look suspicious. Only one explains every signal.</p>
+              <h2 className="text-2xl font-semibold tracking-tight">{t.hypothesis.suspectTitle}</h2>
+              <p className="mt-1.5 text-sm text-muted">{t.hypothesis.suspectText}</p>
               <Choices
                 options={incident.suspects}
                 onWrong={() => setMisses((m) => m + 1)}
@@ -151,23 +153,23 @@ export function HypothesisDialog({ incident, onClose, onResolved }: Props) {
             <motion.div key="h" {...slide} className="p-6">
               <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-accent">
                 <Sparkles className="size-3.5" />
-                {incident.suspects ? "Root cause confirmed" : "Likely root cause"}
+                {incident.suspects ? t.hypothesis.confirmed : t.hypothesis.likely}
               </div>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight">{incident.rootCause.title}</h2>
               <p className="mt-3 text-[14.5px] leading-relaxed text-fg/80">{incident.rootCause.hypothesis}</p>
 
               <div className="mt-5 flex items-center gap-2 text-sm">
-                <span className="text-muted">Confidence</span>
+                <span className="text-muted">{t.hypothesis.confidence}</span>
                 <span className="flex gap-0.5">
                   {[0, 1, 2].map((i) => (
                     <span key={i} className={`h-1.5 w-5 rounded-full ${i < (incident.rootCause.confidence === "High" ? 3 : 2) ? "bg-healthy" : "bg-white/10"}`} />
                   ))}
                 </span>
-                <span className="font-medium text-healthy">{incident.rootCause.confidence}</span>
+                <span className="font-medium text-healthy">{t.hypothesis.confidenceLevel[incident.rootCause.confidence]}</span>
               </div>
 
               <div className="mt-6 rounded-xl border border-line bg-raised/50 p-4">
-                <div className="mb-3 text-[11px] uppercase tracking-[0.14em] text-muted">Causal chain</div>
+                <div className="mb-3 text-[11px] uppercase tracking-[0.14em] text-muted">{t.hypothesis.chain}</div>
                 <ol className="space-y-0">
                   {incident.rootCause.chain.map((link, i) => (
                     <motion.li
@@ -193,7 +195,7 @@ export function HypothesisDialog({ incident, onClose, onResolved }: Props) {
                 onClick={() => setStep("action")}
                 className="group mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-fg px-4 py-3 text-sm font-semibold text-bg transition hover:bg-white"
               >
-                Decide the fix
+                {t.hypothesis.decide}
                 <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
               </button>
             </motion.div>
@@ -202,7 +204,7 @@ export function HypothesisDialog({ incident, onClose, onResolved }: Props) {
           {step === "action" && (
             <motion.div key="a" {...slide} className="p-6">
               <h2 className="text-2xl font-semibold tracking-tight">{incident.question}</h2>
-              <p className="mt-1.5 text-sm text-muted">Pick the change that fixes the root cause, not just the symptom.</p>
+              <p className="mt-1.5 text-sm text-muted">{t.hypothesis.fixText}</p>
               <Choices
                 options={incident.options}
                 onWrong={() => setMisses((m) => m + 1)}
@@ -213,7 +215,7 @@ export function HypothesisDialog({ incident, onClose, onResolved }: Props) {
               />
               {!fixed && (
                 <button onClick={() => setStep("hypothesis")} className="mt-4 text-xs text-muted hover:text-fg">
-                  ← Back to hypothesis
+                  {t.hypothesis.back}
                 </button>
               )}
             </motion.div>

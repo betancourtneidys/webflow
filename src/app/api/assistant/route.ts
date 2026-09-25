@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getIncident } from "@/lib/incidents";
 import { buildSystemPrompt, fallbackAnswer, type AssistantRequest } from "@/lib/assistant";
+import { isLang } from "@/lib/i18n";
 
 const MODEL = process.env.CLOUD_DETECTIVE_MODEL ?? "claude-opus-5";
 
@@ -12,7 +13,8 @@ export async function POST(request: Request) {
     return Response.json({ error: "invalid body" }, { status: 400 });
   }
 
-  const incident = getIncident(String(body.incidentId));
+  const lang = isLang(body.lang) ? body.lang : "en";
+  const incident = getIncident(String(body.incidentId), lang);
   const question = typeof body.question === "string" ? body.question.trim().slice(0, 500) : "";
   if (!incident || !question) {
     return Response.json({ error: "invalid request" }, { status: 400 });
@@ -24,6 +26,7 @@ export async function POST(request: Request) {
   const req: AssistantRequest = {
     incidentId: incident.id,
     question,
+    lang,
     evidence: (Array.isArray(body.evidence) ? body.evidence : []).filter((id) => knownEvidence.has(id)),
     inspected: (Array.isArray(body.inspected) ? body.inspected : []).filter((id) => knownResources.has(id)),
     history: (Array.isArray(body.history) ? body.history : [])

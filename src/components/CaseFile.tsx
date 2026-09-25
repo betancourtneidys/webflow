@@ -4,10 +4,10 @@ import { motion } from "motion/react";
 import type { Incident } from "@/lib/types";
 import { formatElapsed } from "@/lib/format";
 import { useSolved } from "@/lib/progress";
-
-const RANKS = { 1: "Rookie", 2: "Detective", 3: "Inspector", 4: "Chief" } as const;
+import { useT } from "./LangProvider";
 
 export function Difficulty({ level }: { level: Incident["difficulty"] }) {
+  const t = useT();
   return (
     <span className="flex items-center gap-2 text-[12px] text-muted">
       <span className="flex gap-0.5" aria-hidden>
@@ -15,13 +15,14 @@ export function Difficulty({ level }: { level: Incident["difficulty"] }) {
           <span key={i} className={`size-1.5 rounded-full ${i <= level ? "bg-accent" : "bg-white/10"}`} />
         ))}
       </span>
-      {RANKS[level]}
+      {t.ranks[level]}
     </span>
   );
 }
 
 /** "UNSOLVED" / "SOLVED" rubber stamp, backed by the local solve record. */
 export function CaseStamp({ id }: { id: string }) {
+  const t = useT();
   const solved = useSolved();
   if (!solved) return <span className="h-6" aria-hidden />;
   const record = solved[id];
@@ -36,8 +37,8 @@ export function CaseStamp({ id }: { id: string }) {
         record ? "border-healthy/70 text-healthy" : "border-critical/60 text-critical/90"
       }`}
     >
-      {record ? "Solved" : "Unsolved"}
-      {record && <span className="text-[9.5px] font-medium tracking-[0.1em] opacity-80">best {formatElapsed(record.bestMs)}</span>}
+      {record ? t.stamp.solved : t.stamp.unsolved}
+      {record && <span className="text-[9.5px] font-medium tracking-[0.1em] opacity-80">{t.stamp.best(formatElapsed(record.bestMs))}</span>}
     </motion.span>
   );
 }

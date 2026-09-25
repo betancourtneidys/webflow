@@ -12,6 +12,7 @@ import { AssistantPanel, type ChatMessage } from "./AssistantPanel";
 import { HypothesisDialog } from "./HypothesisDialog";
 import { ResourcePanel } from "./ResourcePanel";
 import { Timeline } from "./Timeline";
+import { useLang, useLocalePath, useT } from "./LangProvider";
 import { Logo, SimulationChip, StatusDot } from "./ui";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -23,6 +24,9 @@ interface Props {
 }
 
 export function Workspace({ incident, startedAt, onResolved }: Props) {
+  const t = useT();
+  const lang = useLang();
+  const href = useLocalePath();
   const [now, setNow] = useState(startedAt);
   const [selected, setSelected] = useState<string | null>(null);
   const [activeEvent, setActiveEvent] = useState<number | null>(null);
@@ -34,12 +38,7 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
   const [dialog, setDialog] = useState(false);
   const [toast, setToast] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: "assistant",
-      text: "I'm following this incident with you. Click any resource on the diagram to inspect it — I'll help you connect what you find.",
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([{ role: "assistant", text: t.ws.welcome }]);
 
   const ready = evidence.length >= incident.minEvidence;
   const resource = incident.resources.find((r) => r.id === selected);
@@ -75,7 +74,7 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
       setLoading(true);
       const history = messages.slice(1);
       setMessages((m) => [...m, { role: "user", text: question }]);
-      const payload = { incidentId: incident.id, question, evidence, inspected };
+      const payload = { incidentId: incident.id, question, evidence, inspected, lang };
       const minDelay = new Promise((r) => setTimeout(r, 650));
       let answer: string;
       try {
@@ -100,7 +99,7 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
       setMessages((m) => [...m, { role: "assistant", text: answer }]);
       setLoading(false);
     },
-    [incident, evidence, inspected, messages],
+    [incident, evidence, inspected, messages, lang],
   );
 
   const selectEvent = (i: number) => {
@@ -125,7 +124,7 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
     <div className="flex min-h-screen flex-col lg:h-screen lg:min-h-0">
       {/* Top bar */}
       <header className="flex h-14 shrink-0 items-center gap-4 border-b border-line px-4 sm:px-5">
-        <Link href="/" aria-label="Cloud Detective home" className="text-fg">
+        <Link href={href("/")} aria-label={t.ws.home} className="text-fg">
           <Logo size={24} />
         </Link>
         <span className="h-5 w-px bg-line-strong" />
@@ -133,9 +132,9 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
           <StatusDot status="critical" pulse />
           <span className="truncate font-medium">{incident.title}</span>
           <span className="hidden rounded-md border border-critical/30 bg-critical/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-critical sm:inline">
-            {incident.severity}
+            {t.severity[incident.severity]}
           </span>
-          <SimulationChip className="hidden md:inline-flex" />
+          <SimulationChip label={t.sim.chip} tooltip={t.sim.tooltip} className="hidden md:inline-flex" />
         </div>
         <div className="ml-auto flex items-center gap-4 text-sm">
           <span className="hidden items-center gap-1.5 font-mono tabular-nums text-muted sm:flex">
@@ -156,7 +155,7 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
             className="flex items-center gap-1.5 rounded-lg border border-line-strong px-2.5 py-1.5 text-xs font-medium text-muted transition hover:text-fg xl:hidden"
           >
             <Sparkles className="size-3.5 text-accent" />
-            Assistant
+            {t.ws.assistant}
           </button>
           <button
             onClick={() => setDialog(true)}
@@ -164,7 +163,7 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
             className={`hidden items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition sm:flex ${ready ? "bg-accent text-bg hover:brightness-110" : "border border-line-strong text-faint"}`}
           >
             <FlaskConical className="size-3.5" />
-            Build hypothesis
+            {t.ws.buildHypothesis}
           </button>
         </div>
       </header>
@@ -177,11 +176,11 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
             <h1 className="mt-2 text-[15px] font-semibold leading-snug">{incident.title}</h1>
             <dl className="mt-3 space-y-1.5 text-[13px]">
               <div className="flex justify-between">
-                <dt className="text-muted">Severity</dt>
-                <dd className="font-medium capitalize text-critical">{incident.severity}</dd>
+                <dt className="text-muted">{t.ws.severity}</dt>
+                <dd className="font-medium capitalize text-critical">{t.severity[incident.severity]}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted">Started</dt>
+                <dt className="text-muted">{t.ws.started}</dt>
                 <dd className="font-mono">{incident.startedAt}</dd>
               </div>
             </dl>
@@ -189,7 +188,7 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
 
           <div className="grid grid-cols-2 gap-6 lg:grid-cols-1">
             <section>
-              <h2 className="mb-2.5 text-[11px] uppercase tracking-[0.14em] text-muted">Investigation</h2>
+              <h2 className="mb-2.5 text-[11px] uppercase tracking-[0.14em] text-muted">{t.ws.investigation}</h2>
               <ul className="space-y-0.5">
                 {incident.resources.map((r) => {
                   const done = inspected.includes(r.id);
@@ -214,7 +213,7 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
 
             <section>
               <div className="mb-2.5 flex items-baseline justify-between">
-                <h2 className="text-[11px] uppercase tracking-[0.14em] text-muted">Evidence</h2>
+                <h2 className="text-[11px] uppercase tracking-[0.14em] text-muted">{t.ws.evidence}</h2>
                 <span className="font-mono text-xs tabular-nums text-muted">
                   {evidence.length} / {incident.evidence.length}
                 </span>
@@ -249,7 +248,7 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
                 {Array.from({ length: incident.evidence.length - evidence.length }, (_, i) => (
                   <li key={`p${i}`} className="flex gap-2 text-[12.5px] text-faint">
                     <Circle className="mt-0.5 size-3.5 shrink-0" />
-                    Undiscovered signal
+                    {t.ws.undiscovered}
                   </li>
                 ))}
               </ul>
@@ -260,9 +259,7 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
             className={`rounded-xl border p-4 transition-colors ${ready ? "border-accent/40 bg-accent/[0.07]" : "border-line bg-raised/40"}`}
           >
             <p className="text-[13px] leading-snug">
-              {ready
-                ? "You have enough evidence to form a hypothesis."
-                : `Collect ${incident.minEvidence - evidence.length} more piece${incident.minEvidence - evidence.length === 1 ? "" : "s"} of evidence to form a hypothesis.`}
+              {ready ? t.ws.ready : t.ws.collectMore(incident.minEvidence - evidence.length)}
             </p>
             <button
               onClick={() => setDialog(true)}
@@ -270,7 +267,7 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
               className={`mt-3 flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold tracking-wide transition ${ready ? "bg-accent text-bg hover:brightness-110" : "cursor-not-allowed bg-white/[0.05] text-faint"}`}
             >
               <FlaskConical className="size-3.5" />
-              BUILD HYPOTHESIS
+              {t.ws.buildHypothesisCaps}
             </button>
           </div>
         </aside>
@@ -280,7 +277,7 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
           <div className="relative h-[420px] border-b border-line lg:h-auto lg:flex-1">
             <div className="grid-dots absolute inset-0" />
             <div className="absolute left-5 top-4 z-10 flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-muted">
-              Architecture
+              {t.ws.architecture}
               {inspected.length === 0 && (
                 <motion.span
                   initial={{ opacity: 0 }}
@@ -289,7 +286,7 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
                   className="flex items-center gap-1 normal-case tracking-normal text-accent"
                 >
                   <MousePointerClick className="size-3.5" />
-                  Click a resource to inspect it
+                  {t.ws.clickHint}
                 </motion.span>
               )}
             </div>
@@ -305,8 +302,8 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
           </div>
           <div className="shrink-0 px-4 pb-3 pt-4">
             <div className="mb-2 flex items-center justify-between px-1">
-              <h2 className="text-[11px] uppercase tracking-[0.14em] text-muted">Timeline</h2>
-              <span className="text-[11px] text-faint">Select an event to jump to its resource</span>
+              <h2 className="text-[11px] uppercase tracking-[0.14em] text-muted">{t.ws.timeline}</h2>
+              <span className="text-[11px] text-faint">{t.ws.timelineHint}</span>
             </div>
             <Timeline events={incident.timeline} active={activeEvent} onSelect={selectEvent} />
           </div>
@@ -323,18 +320,18 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
             <button
               onClick={() => setDrawer(false)}
               className="grid w-8 place-items-center rounded-md text-muted hover:bg-white/5 hover:text-fg xl:hidden"
-              aria-label="Close panel"
+              aria-label={t.ws.closePanel}
             >
               <X className="size-4" />
             </button>
-            {(["inspect", "assistant"] as const).map((t) => (
+            {(["inspect", "assistant"] as const).map((name) => (
               <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-medium transition ${tab === t ? "bg-white/[0.07] text-fg" : "text-muted hover:text-fg"}`}
+                key={name}
+                onClick={() => setTab(name)}
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-medium transition ${tab === name ? "bg-white/[0.07] text-fg" : "text-muted hover:text-fg"}`}
               >
-                {t === "inspect" ? <Search className="size-3.5" /> : <Sparkles className="size-3.5" />}
-                {t === "inspect" ? "Inspector" : "Assistant"}
+                {name === "inspect" ? <Search className="size-3.5" /> : <Sparkles className="size-3.5" />}
+                {name === "inspect" ? t.ws.inspector : t.ws.assistant}
               </button>
             ))}
           </div>
@@ -361,10 +358,8 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
                     <span className="grid size-12 place-items-center rounded-2xl border border-line bg-raised">
                       <Search className="size-5 text-muted" />
                     </span>
-                    <p className="mt-4 text-sm font-medium">Nothing selected</p>
-                    <p className="mt-1 max-w-[240px] text-[13px] leading-relaxed text-muted">
-                      Pick a resource on the diagram or an event on the timeline to see its metrics and logs.
-                    </p>
+                    <p className="mt-4 text-sm font-medium">{t.ws.nothingSelected}</p>
+                    <p className="mt-1 max-w-[240px] text-[13px] leading-relaxed text-muted">{t.ws.nothingSelectedText}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -388,9 +383,9 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
             className="fixed inset-x-4 bottom-16 z-[45] mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-accent/40 bg-surface/95 py-2.5 pl-4 pr-2.5 text-sm shadow-2xl backdrop-blur sm:inset-x-auto sm:left-1/2 sm:w-max sm:max-w-none sm:-translate-x-1/2 sm:rounded-full sm:py-2 sm:pr-2 lg:bottom-6"
           >
             <Sparkles className="size-4 shrink-0 text-accent" />
-            <span className="flex-1 text-left leading-snug">You have enough evidence to form a hypothesis.</span>
+            <span className="flex-1 text-left leading-snug">{t.ws.ready}</span>
             <span className="shrink-0 whitespace-nowrap rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-bg">
-              Build hypothesis
+              {t.ws.buildHypothesis}
             </span>
           </motion.button>
         )}

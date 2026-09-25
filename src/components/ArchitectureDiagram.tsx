@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { Check } from "lucide-react";
 import type { Edge, Incident, Resource } from "@/lib/types";
+import { useT } from "./LangProvider";
 import { KindIcon, STATUS_COLOR, StatusDot } from "./ui";
 
 interface Props {
@@ -60,6 +61,7 @@ export function ArchitectureDiagram({ incident, selected, highlighted, inspected
   const byId = new Map(incident.resources.map((r) => [r.id, r]));
   const focus = selected ?? highlighted;
   const scroller = useRef<HTMLDivElement>(null);
+  const t = useT();
 
   // On narrow screens the canvas scrolls horizontally; start centered.
   useEffect(() => {
@@ -100,7 +102,7 @@ export function ArchitectureDiagram({ incident, selected, highlighted, inspected
               transition={{ delay: 0.08 * i, type: "spring", stiffness: 320, damping: 26 }}
               style={{ left: `${r.x}%`, top: `${r.y}%` }}
               className={`group absolute -translate-x-1/2 -translate-y-1/2 text-left outline-none ${onSelect ? "cursor-pointer" : "cursor-default"}`}
-              aria-label={`Inspect ${r.name}`}
+              aria-label={t.resource.inspect(r.name)}
             >
               <div
                 className={[

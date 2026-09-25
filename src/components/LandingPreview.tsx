@@ -6,16 +6,19 @@ import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, Check, Search } from "lucide-react";
 import type { Incident } from "@/lib/types";
 import { ArchitectureDiagram } from "./ArchitectureDiagram";
+import { useLocalePath, useT } from "./LangProvider";
 import { CapacityBar, Logo, STATUS_TEXT, StatusDot } from "./ui";
 
 // Clues hidden around the diagram, in the same percent space as resource positions.
-const CLUES = [
-  { id: "deploy", x: 16, y: 29, text: "createPool() moved into handler" },
-  { id: "alb", x: 79, y: 13, text: "p99 4.8s · traffic flat" },
-  { id: "lambda", x: 78, y: 38, text: "ERROR too many connections" },
-  { id: "rds", x: 28, y: 96, text: "487 / 500 connections" },
-  { id: "sqs", x: 72, y: 96, text: "backlog is a symptom" },
-];
+// Texts come from the dictionary (t.preview.clues).
+const CLUE_POSITIONS = [
+  { id: "deploy", x: 16, y: 29 },
+  { id: "alb", x: 79, y: 13 },
+  { id: "lambda", x: 78, y: 38 },
+  { id: "rds", x: 28, y: 96 },
+  { id: "sqs", x: 72, y: 96 },
+] as const;
+const CLUE_COUNT = CLUE_POSITIONS.length;
 
 const INSET = 16; // matches the diagram's inset-4
 const LENS = 124; // lens diameter in px; keep in sync with .lens-mask in globals.css
@@ -53,6 +56,9 @@ function ClueChip({ text, found, hovered }: { text: string; found: boolean; hove
 }
 
 export function LandingPreview({ incident }: { incident: Incident }) {
+  const t = useT();
+  const href = useLocalePath();
+  const CLUES = CLUE_POSITIONS.map((c) => ({ ...c, text: t.preview.clues[c.id] }));
   const box = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
   const [found, setFound] = useState<string[]>([]);
@@ -60,7 +66,7 @@ export function LandingPreview({ incident }: { incident: Incident }) {
   const [hoverNode, setHoverNode] = useState<string | null>(null);
   // Sample points already seen per clue; a ref so scanning doesn't re-render.
   const seen = useRef<Record<string, Set<number>>>({});
-  const allFound = found.length === CLUES.length;
+  const allFound = found.length === CLUE_COUNT;
 
   const rds = incident.resources.find((r) => r.id === "rds")!;
   const connections = rds.metrics[0];
@@ -101,7 +107,7 @@ export function LandingPreview({ incident }: { incident: Incident }) {
     }
     if (completed.length) {
       setFound([...found, ...completed]);
-      if (found.length + completed.length === CLUES.length) {
+      if (found.length + completed.length === CLUE_COUNT) {
         setHoverClue(null);
         setHoverNode(null);
       }
@@ -128,12 +134,12 @@ export function LandingPreview({ incident }: { incident: Incident }) {
           {allFound ? (
             <motion.span initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} className="ml-auto hidden lg:block">
               <Link
-                href={`/incident/${incident.id}`}
+                href={href(`/incident/${incident.id}`)}
                 className="group flex items-center gap-2 text-[12.5px] text-fg/90 hover:text-fg"
               >
-                Sharp eye. Now find the root cause.
+                {t.preview.done}
                 <span className="flex items-center gap-1 rounded-full bg-accent px-2.5 py-0.5 text-xs font-semibold text-bg">
-                  Open case
+                  {t.preview.openCase}
                   <ArrowRight className="size-3.5 transition group-hover:translate-x-0.5" />
                 </span>
               </Link>
@@ -141,9 +147,9 @@ export function LandingPreview({ incident }: { incident: Incident }) {
           ) : (
             <span className="ml-auto hidden items-center gap-1.5 font-mono text-[12px] tabular-nums text-muted lg:flex">
               <Search className="size-3.5" />
-              Clues spotted
+              {t.preview.cluesSpotted}
               <motion.span key={found.length} initial={{ scale: 1.6, color: "#9aa8ff" }} animate={{ scale: 1, color: "#e8eaf0" }}>
-                {found.length}/{CLUES.length}
+                {found.length}/{CLUE_COUNT}
               </motion.span>
             </span>
           )}
@@ -218,7 +224,7 @@ export function LandingPreview({ incident }: { incident: Incident }) {
                   className="pointer-events-none absolute left-4 top-3 hidden items-center gap-1.5 text-[12px] text-muted lg:flex"
                 >
                   <Search className="size-3.5 text-accent" />
-                  Move the lens over the system to find clues
+                  {t.preview.hint}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -235,8 +241,8 @@ export function LandingPreview({ incident }: { incident: Incident }) {
               </div>
             </div>
             <div className="rounded-lg border border-line p-3 text-[12.5px] leading-relaxed text-fg/80">
-              <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-accent">Assistant observation</div>
-              Database connections are approaching the configured limit.
+              <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-accent">{t.preview.observationLabel}</div>
+              {t.preview.observation}
             </div>
             <ul className="space-y-1.5 pt-1 text-[12px]">
               {incident.evidence.slice(0, 3).map((e) => (

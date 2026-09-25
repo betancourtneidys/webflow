@@ -50,14 +50,14 @@ export function Wordmark() {
  * Marks screens as a practice exercise so nobody mistakes them for a real
  * incident. "Game day" is what SRE teams call a planned failure drill.
  */
-export function SimulationChip({ className = "" }: { className?: string }) {
+export function SimulationChip({ label, tooltip, className = "" }: { label: string; tooltip: string; className?: string }) {
   return (
     <span
-      title="Game day: a practice drill. The systems, metrics and logs are fictional — no real customers are affected."
+      title={tooltip}
       className={`inline-flex shrink-0 items-center gap-1 rounded-md border border-accent/30 bg-accent/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-accent ${className}`}
     >
       <Gamepad2 className="size-3" strokeWidth={2} />
-      Game day
+      {label}
     </span>
   );
 }

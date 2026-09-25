@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { ArrowUp, Sparkles } from "lucide-react";
+import { useT } from "./LangProvider";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -32,6 +33,7 @@ function TypedText({ text }: { text: string }) {
 }
 
 export function AssistantPanel({ messages, loading, suggestions, onAsk }: Props) {
+  const t = useT();
   const [draft, setDraft] = useState("");
   const scroller = useRef<HTMLDivElement>(null);
   const asked = new Set(messages.filter((m) => m.role === "user").map((m) => m.text));
@@ -54,11 +56,9 @@ export function AssistantPanel({ messages, loading, suggestions, onAsk }: Props)
           <span className="grid size-6 place-items-center rounded-md bg-accent/15 text-accent">
             <Sparkles className="size-3.5" />
           </span>
-          Investigation assistant
+          {t.assistant.title}
         </div>
-        <p className="mt-1.5 text-xs leading-relaxed text-muted">
-          Sees the signals you&apos;ve inspected. It won&apos;t name a root cause until the evidence supports one.
-        </p>
+        <p className="mt-1.5 text-xs leading-relaxed text-muted">{t.assistant.description}</p>
       </div>
 
       <div ref={scroller} className="scrollbar-thin flex-1 space-y-3 overflow-y-auto p-5">
@@ -83,7 +83,7 @@ export function AssistantPanel({ messages, loading, suggestions, onAsk }: Props)
             <span className="blink size-1.5 rounded-full bg-accent" />
             <span className="blink size-1.5 rounded-full bg-accent [animation-delay:200ms]" />
             <span className="blink size-1.5 rounded-full bg-accent [animation-delay:400ms]" />
-            <span className="ml-1.5">Correlating signals…</span>
+            <span className="ml-1.5">{t.assistant.thinking}</span>
           </div>
         )}
       </div>
@@ -109,7 +109,7 @@ export function AssistantPanel({ messages, loading, suggestions, onAsk }: Props)
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="Ask about this incident…"
+            placeholder={t.assistant.placeholder}
             maxLength={500}
             className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-faint"
           />
@@ -117,7 +117,7 @@ export function AssistantPanel({ messages, loading, suggestions, onAsk }: Props)
             type="submit"
             disabled={!draft.trim() || loading}
             className="grid size-7 place-items-center rounded-lg bg-accent text-bg transition disabled:bg-white/10 disabled:text-faint"
-            aria-label="Send"
+            aria-label={t.assistant.send}
           >
             <ArrowUp className="size-4" strokeWidth={2.5} />
           </button>

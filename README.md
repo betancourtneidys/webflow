@@ -25,10 +25,16 @@ No AWS account and no API key are needed. Every incident runs from local data.
 | 🔥 Production API degraded | Database connection exhaustion after a deploy | ALB → Lambda → RDS / SQS |
 | 📦 SQS processing delay | Poison messages retried forever | API → SQS → Lambda workers → DynamoDB |
 | 🔐 Deployment failure | OIDC `sub` mismatch in an IAM trust policy | GitHub Actions → OIDC → STS → IAM role → ECS |
+| 🌐 Intermittent checkout errors | Weighted DNS still routing to a drained region | CloudFront → Route 53 → two ALBs → ECS |
+| 🚦 Orders API throttled | A batch job starving account-wide Lambda concurrency | API Gateway → Lambda ← EventBridge batch → DynamoDB |
+| 🗝️ Payments failing on half the fleet | Stale DB credentials after Secrets Manager rotation | ALB → ECS → RDS, Secrets Manager, KMS |
+
+The last three are harder: more red herrings, and the player must pick the root cause among four suspects before it is revealed.
 
 ## How it works
 
-- **Scenarios** live in `src/lib/incidents/*.ts`, typed by `src/lib/types.ts`. Each one declares its resources (with diagram positions, metrics, logs and the evidence they reveal), edges, timeline, root cause, resolution options and fallback assistant answers. To add an incident, create a file and append it to `src/lib/incidents/index.ts`.
+- **Scenarios** live in `src/lib/incidents/*.ts`, typed by `src/lib/types.ts`. Each one declares its resources (with diagram positions, metrics, logs and the evidence they reveal), edges, timeline, root cause, optional suspects, resolution options and fallback assistant answers. To add an incident, create a file, add its Spanish overlay in `src/lib/incidents/es/`, and register both in `src/lib/incidents/index.ts`.
+- **Languages.** English lives at `/`, Spanish at `/es` (both prerendered). UI strings are in `src/lib/i18n.ts`; the `Messages` type makes a missing Spanish key a compile error. Incident translations are partial overlays merged over the English source: arrays follow the English order (include `id`s), and anything left out — numbers, resource names, logs — falls through unchanged.
 - **Scoring is deterministic.** Evidence, the hypothesis threshold (`minEvidence`) and the correct option all come from the scenario. The LLM never decides whether you solved it.
 - **Assistant.** `POST /api/assistant` calls Claude with the incident context. Until you have `minEvidence`, the prompt contains neither the root cause nor the details of resources you haven't inspected, so it can't give the answer away.
 - **Demo mode.** If `ANTHROPIC_API_KEY` is missing, the provider fails, times out or refuses, the route (and, if the route is unreachable, the browser) answers from `src/lib/assistant.ts` using the scenario data. The user never sees an error.

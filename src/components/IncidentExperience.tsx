@@ -4,6 +4,7 @@ import { useState } from "react";
 import { getIncident, nextIncident } from "@/lib/incidents";
 import { formatElapsed } from "@/lib/format";
 import { recordSolve } from "@/lib/progress";
+import { useLang } from "./LangProvider";
 import { IncidentBrief } from "./IncidentBrief";
 import { ResolvedScreen } from "./ResolvedScreen";
 import { Workspace } from "./Workspace";
@@ -20,7 +21,8 @@ type Phase =
     };
 
 export function IncidentExperience({ id }: { id: string }) {
-  const incident = getIncident(id)!;
+  const lang = useLang();
+  const incident = getIncident(id, lang)!;
   const [phase, setPhase] = useState<Phase>({ name: "brief" });
   const [run, setRun] = useState(0);
 
@@ -34,7 +36,7 @@ export function IncidentExperience({ id }: { id: string }) {
     return (
       <ResolvedScreen
         incident={incident}
-        next={nextIncident(incident.id)}
+        next={nextIncident(incident.id, lang)}
         elapsed={phase.elapsed}
         evidence={phase.evidence}
         attempts={phase.attempts}

@@ -6,9 +6,13 @@ import { motion } from "motion/react";
 import { ArrowRight, ChevronLeft } from "lucide-react";
 import type { Incident } from "@/lib/types";
 import { ArchitectureDiagram } from "./ArchitectureDiagram";
+import { LangSwitch, useLocalePath, useT } from "./LangProvider";
 import { STATUS_TEXT, SimulationChip, StatusDot, Wordmark } from "./ui";
 
 export function IncidentBrief({ incident, onInvestigate }: { incident: Incident; onInvestigate: () => void }) {
+  const t = useT();
+  const href = useLocalePath();
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Enter" && onInvestigate();
     window.addEventListener("keydown", onKey);
@@ -22,14 +26,17 @@ export function IncidentBrief({ incident, onInvestigate }: { incident: Incident;
         <ArchitectureDiagram incident={incident} />
       </div>
 
-      <header className="relative z-10 flex items-center justify-between px-6 py-5">
-        <Link href="/">
+      <header className="relative z-10 flex items-center justify-between gap-3 px-6 py-5">
+        <Link href={href("/")}>
           <Wordmark />
         </Link>
-        <Link href="/incidents" className="flex items-center gap-1 text-sm text-muted transition hover:text-fg">
-          <ChevronLeft className="size-4" />
-          All incidents
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href={href("/incidents")} className="flex items-center gap-1 text-sm text-muted transition hover:text-fg">
+            <ChevronLeft className="size-4" />
+            <span className="hidden sm:inline">{t.brief.allIncidents}</span>
+          </Link>
+          <LangSwitch />
+        </div>
       </header>
 
       <div className="relative z-10 flex flex-1 items-center justify-center px-4 pb-16">
@@ -43,15 +50,15 @@ export function IncidentBrief({ incident, onInvestigate }: { incident: Incident;
             <div className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-critical">
                 <StatusDot status="critical" pulse />
-                Incident · {incident.severity}
+                {t.brief.incident} · {t.severity[incident.severity]}
               </span>
-              <SimulationChip />
+              <SimulationChip label={t.sim.chip} tooltip={t.sim.tooltip} />
             </div>
             <h1 className="mt-4 text-2xl font-semibold tracking-tight">
               <span className="mr-2">{incident.emoji}</span>
               {incident.title}
             </h1>
-            <p className="mt-1.5 text-sm text-muted">Started {incident.startedAgo} · {incident.startedAt}</p>
+            <p className="mt-1.5 text-sm text-muted">{t.brief.started(incident.startedAgo, incident.startedAt)}</p>
             <p className="mt-4 text-[14px] leading-relaxed text-fg/80">{incident.summary}</p>
           </div>
 
@@ -78,11 +85,11 @@ export function IncidentBrief({ incident, onInvestigate }: { incident: Incident;
               onClick={onInvestigate}
               className="group flex w-full items-center justify-center gap-2 rounded-xl bg-fg px-4 py-3 text-sm font-semibold tracking-wide text-bg transition hover:bg-white"
             >
-              INVESTIGATE INCIDENT
+              {t.brief.investigate}
               <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
             </button>
-            <p className="mt-3 text-center text-xs text-faint">Press Enter to start · the clock starts now</p>
-            <p className="mt-1 text-center text-xs text-faint">This is a drill · fictional systems and data</p>
+            <p className="mt-3 text-center text-xs text-faint">{t.brief.pressEnter}</p>
+            <p className="mt-1 text-center text-xs text-faint">{t.sim.briefNote}</p>
           </div>
         </motion.div>
       </div>

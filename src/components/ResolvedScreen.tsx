@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowRight, CircleCheck, RotateCcw } from "lucide-react";
 import type { Incident } from "@/lib/types";
+import { useLocalePath, useT } from "./LangProvider";
 import { Wordmark } from "./ui";
 
 interface Props {
@@ -23,17 +24,19 @@ const BURST = Array.from({ length: 18 }, (_, i) => {
 });
 
 export function ResolvedScreen({ incident, next, elapsed, evidence, attempts, record, onReplay }: Props) {
+  const t = useT();
+  const href = useLocalePath();
   const stats = [
-    { label: "Investigation time", value: elapsed },
-    { label: "Evidence collected", value: `${evidence} / ${incident.evidence.length}` },
-    { label: "Attempts", value: String(attempts) },
+    { label: t.resolved.time, value: elapsed },
+    { label: t.resolved.evidence, value: `${evidence} / ${incident.evidence.length}` },
+    { label: t.resolved.attempts, value: String(attempts) },
   ];
 
   return (
     <main className="relative flex min-h-screen flex-col overflow-hidden">
       <div className="grid-dots pointer-events-none absolute inset-0 opacity-50 [mask-image:radial-gradient(ellipse_at_center,black_15%,transparent_65%)]" />
       <header className="relative z-10 px-6 py-5">
-        <Link href="/">
+        <Link href={href("/")}>
           <Wordmark />
         </Link>
       </header>
@@ -66,9 +69,9 @@ export function ResolvedScreen({ incident, next, elapsed, evidence, attempts, re
             </motion.span>
           </div>
 
-          <div className="mt-7 text-[11px] font-medium uppercase tracking-[0.2em] text-healthy">🎉 Incident resolved</div>
+          <div className="mt-7 text-[11px] font-medium uppercase tracking-[0.2em] text-healthy">{t.resolved.title}</div>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{incident.rootCause.title}</h1>
-          <p className="mt-2 text-sm text-muted">Root cause identified</p>
+          <p className="mt-2 text-sm text-muted">{t.resolved.identified}</p>
           {record && (
             <motion.div
               initial={{ opacity: 0, scale: 1.6, rotate: -14 }}
@@ -76,7 +79,7 @@ export function ResolvedScreen({ incident, next, elapsed, evidence, attempts, re
               transition={{ delay: 0.9, type: "spring", stiffness: 420, damping: 18 }}
               className="mt-4 inline-block rounded-md border-2 border-healthy/70 px-2.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-healthy"
             >
-              {record === "first" ? "Case closed · first solve" : "New personal best"}
+              {record === "first" ? t.resolved.firstSolve : t.resolved.newBest}
             </motion.div>
           )}
 
@@ -101,22 +104,22 @@ export function ResolvedScreen({ incident, next, elapsed, evidence, attempts, re
             transition={{ delay: 0.8 }}
             className="mt-5 rounded-2xl border border-line bg-surface/60 p-5 text-left"
           >
-            <div className="text-[11px] uppercase tracking-[0.14em] text-accent">Takeaway</div>
+            <div className="text-[11px] uppercase tracking-[0.14em] text-accent">{t.resolved.takeaway}</div>
             <p className="mt-2 text-[14px] leading-relaxed text-fg/85">{incident.lesson}</p>
           </motion.div>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
-              href={`/incident/${next.id}`}
+              href={href(`/incident/${next.id}`)}
               className="group flex items-center gap-2 rounded-xl bg-fg px-5 py-3 text-sm font-semibold tracking-wide text-bg transition hover:bg-white"
             >
-              NEXT INCIDENT
+              {t.resolved.next}
               <span className="font-normal text-bg/60">· {next.emoji} {next.title}</span>
               <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
             </Link>
             <button onClick={onReplay} className="flex items-center gap-1.5 px-3 py-3 text-sm text-muted transition hover:text-fg">
               <RotateCcw className="size-3.5" />
-              Replay
+              {t.resolved.replay}
             </button>
           </div>
         </motion.div>

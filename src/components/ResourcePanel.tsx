@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { CircleCheck, MessageSquareText, Sparkles, X } from "lucide-react";
 import type { Incident, Resource } from "@/lib/types";
+import { useT } from "./LangProvider";
 import { CapacityBar, KindIcon, STATUS_TEXT, Sparkline, StatusDot } from "./ui";
 
 interface Props {
@@ -12,9 +13,8 @@ interface Props {
   onAsk: (question: string) => void;
 }
 
-const STATUS_LABEL = { critical: "Critical", warning: "Degraded", healthy: "Healthy", neutral: "Info" };
-
 export function ResourcePanel({ incident, resource, onClose, onAsk }: Props) {
+  const t = useT();
   const evidence = incident.evidence.find((e) => e.id === resource.evidence);
 
   return (
@@ -35,13 +35,13 @@ export function ResourcePanel({ incident, resource, onClose, onAsk }: Props) {
           <h2 className="truncate text-base font-semibold">{resource.name}</h2>
           <div className="mt-1 flex items-center gap-1.5 text-xs text-muted">
             <StatusDot status={resource.status} />
-            {STATUS_LABEL[resource.status]}
+            {t.status[resource.status]}
           </div>
         </div>
         <button
           onClick={onClose}
           className="hidden rounded-md p-1 text-muted transition hover:bg-white/5 hover:text-fg xl:block"
-          aria-label="Close panel"
+          aria-label={t.ws.closePanel}
         >
           <X className="size-4" />
         </button>
@@ -57,7 +57,7 @@ export function ResourcePanel({ incident, resource, onClose, onAsk }: Props) {
           >
             <CircleCheck className="mt-px size-4 shrink-0 text-accent" />
             <div>
-              <div className="font-medium text-accent">Evidence collected</div>
+              <div className="font-medium text-accent">{t.resource.evidenceCollected}</div>
               <div className="text-fg/80">{evidence.label}</div>
             </div>
           </motion.div>
@@ -96,7 +96,7 @@ export function ResourcePanel({ incident, resource, onClose, onAsk }: Props) {
         <div className="rounded-lg border border-line bg-gradient-to-b from-white/[0.03] to-transparent p-4">
           <div className="mb-2 flex items-center gap-1.5 text-[11px] uppercase tracking-[0.12em] text-accent">
             <Sparkles className="size-3.5" />
-            Assistant observation
+            {t.resource.observation}
           </div>
           <p className="text-[13.5px] leading-relaxed text-fg/85">{resource.observation}</p>
         </div>
@@ -128,11 +128,11 @@ export function ResourcePanel({ incident, resource, onClose, onAsk }: Props) {
         )}
 
         <button
-          onClick={() => onAsk(`Why is ${resource.name} relevant?`)}
+          onClick={() => onAsk(t.resource.askQuestion(resource.name))}
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-line-strong px-3 py-2 text-[13px] text-muted transition hover:border-white/25 hover:text-fg"
         >
           <MessageSquareText className="size-4" />
-          Ask the assistant about {resource.name}
+          {t.resource.askAbout(resource.name)}
         </button>
       </div>
     </motion.div>
