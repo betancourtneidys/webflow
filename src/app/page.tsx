@@ -5,7 +5,7 @@ import { CaseStamp, Difficulty } from "@/components/CaseFile";
 import { LandingPreview } from "@/components/LandingPreview";
 import { OnCallQuotes } from "@/components/OnCallQuotes";
 import { SiteHeader } from "@/components/SiteHeader";
-import { Logo, StatusDot } from "@/components/ui";
+import { Logo, SimulationChip, StatusDot } from "@/components/ui";
 
 const STEPS = [
   { icon: Eye, title: "Observe", text: "An alert fires. You see the blast radius, not the reason." },
@@ -51,6 +51,10 @@ export default function Home() {
               Browse incidents
             </Link>
           </div>
+          <p className="mt-5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1.5 text-center text-[13px] text-faint">
+            <SimulationChip />
+            This is a drill: simulated AWS incidents, no real systems, no account needed.
+          </p>
         </div>
         <LandingPreview incident={incidents[0]} />
       </section>

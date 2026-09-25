@@ -15,7 +15,7 @@ export default function IncidentsPage() {
       <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-20 pt-10 sm:px-6">
         <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-critical">
           <StatusDot status="critical" pulse />
-          {incidents.length} open incidents
+          Game day · {incidents.length} drills ready
         </div>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Pick an incident to investigate</h1>
         <p className="mt-2 max-w-xl text-muted">

@@ -12,7 +12,7 @@ import { AssistantPanel, type ChatMessage } from "./AssistantPanel";
 import { HypothesisDialog } from "./HypothesisDialog";
 import { ResourcePanel } from "./ResourcePanel";
 import { Timeline } from "./Timeline";
-import { Logo, StatusDot } from "./ui";
+import { Logo, SimulationChip, StatusDot } from "./ui";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -135,6 +135,7 @@ export function Workspace({ incident, startedAt, onResolved }: Props) {
           <span className="hidden rounded-md border border-critical/30 bg-critical/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-critical sm:inline">
             {incident.severity}
           </span>
+          <SimulationChip className="hidden md:inline-flex" />
         </div>
         <div className="ml-auto flex items-center gap-4 text-sm">
           <span className="hidden items-center gap-1.5 font-mono tabular-nums text-muted sm:flex">

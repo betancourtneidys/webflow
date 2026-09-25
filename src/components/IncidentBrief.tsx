@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 import { ArrowRight, ChevronLeft } from "lucide-react";
 import type { Incident } from "@/lib/types";
 import { ArchitectureDiagram } from "./ArchitectureDiagram";
-import { STATUS_TEXT, StatusDot, Wordmark } from "./ui";
+import { STATUS_TEXT, SimulationChip, StatusDot, Wordmark } from "./ui";
 
 export function IncidentBrief({ incident, onInvestigate }: { incident: Incident; onInvestigate: () => void }) {
   useEffect(() => {
@@ -40,9 +40,12 @@ export function IncidentBrief({ incident, onInvestigate }: { incident: Incident;
           className="w-full max-w-[440px] rounded-2xl border border-line-strong bg-surface/90 shadow-[0_30px_120px_-30px_rgb(255_93_97/0.25)] backdrop-blur-xl"
         >
           <div className="border-b border-line p-6">
-            <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-critical">
-              <StatusDot status="critical" pulse />
-              Incident · {incident.severity}
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-critical">
+                <StatusDot status="critical" pulse />
+                Incident · {incident.severity}
+              </span>
+              <SimulationChip />
             </div>
             <h1 className="mt-4 text-2xl font-semibold tracking-tight">
               <span className="mr-2">{incident.emoji}</span>
@@ -79,6 +82,7 @@ export function IncidentBrief({ incident, onInvestigate }: { incident: Incident;
               <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
             </button>
             <p className="mt-3 text-center text-xs text-faint">Press Enter to start · the clock starts now</p>
+            <p className="mt-1 text-center text-xs text-faint">This is a drill · fictional systems and data</p>
           </div>
         </motion.div>
       </div>
