@@ -96,7 +96,7 @@ export function ArchitectureDiagram({ incident, selected, highlighted, inspected
               disabled={!onSelect}
               onClick={() => onSelect?.(r.id)}
               initial={{ opacity: 0, y: 8, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: isSelected ? 1.04 : 1 }}
+              animate={{ opacity: 1, y: 0, scale: isSelected ? 1.04 : isHighlighted ? 1.03 : 1 }}
               transition={{ delay: 0.08 * i, type: "spring", stiffness: 320, damping: 26 }}
               style={{ left: `${r.x}%`, top: `${r.y}%` }}
               className={`group absolute -translate-x-1/2 -translate-y-1/2 text-left outline-none ${onSelect ? "cursor-pointer" : "cursor-default"}`}
@@ -109,7 +109,7 @@ export function ArchitectureDiagram({ incident, selected, highlighted, inspected
                   isSelected
                     ? "border-accent/70 shadow-[0_0_0_4px_rgb(154_168_255/0.12),0_12px_40px_-12px_rgb(0_0_0/0.8)]"
                     : isHighlighted
-                      ? "border-accent/50 shadow-[0_0_0_4px_rgb(154_168_255/0.10)]"
+                      ? "border-accent/70 bg-raised shadow-[0_0_0_4px_rgb(154_168_255/0.14),0_0_28px_-4px_rgb(154_168_255/0.35)]"
                       : "border-line-strong group-hover:border-white/25 group-focus-visible:border-accent/60",
                 ].join(" ")}
               >

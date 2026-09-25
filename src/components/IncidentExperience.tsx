@@ -2,14 +2,22 @@
 
 import { useState } from "react";
 import { getIncident, nextIncident } from "@/lib/incidents";
+import { formatElapsed } from "@/lib/format";
+import { recordSolve } from "@/lib/progress";
 import { IncidentBrief } from "./IncidentBrief";
 import { ResolvedScreen } from "./ResolvedScreen";
-import { Workspace, formatElapsed } from "./Workspace";
+import { Workspace } from "./Workspace";
 
 type Phase =
   | { name: "brief" }
   | { name: "investigate"; startedAt: number }
-  | { name: "resolved"; elapsed: string; evidence: number; attempts: number };
+  | {
+      name: "resolved";
+      elapsed: string;
+      evidence: number;
+      attempts: number;
+      record: "first" | "best" | null;
+    };
 
 export function IncidentExperience({ id }: { id: string }) {
   const incident = getIncident(id)!;
@@ -30,6 +38,7 @@ export function IncidentExperience({ id }: { id: string }) {
         elapsed={phase.elapsed}
         evidence={phase.evidence}
         attempts={phase.attempts}
+        record={phase.record}
         onReplay={() => {
           setRun((r) => r + 1);
           setPhase({ name: "brief" });
@@ -44,9 +53,15 @@ export function IncidentExperience({ id }: { id: string }) {
       key={run}
       incident={incident}
       startedAt={startedAt}
-      onResolved={(result) =>
-        setPhase({ name: "resolved", elapsed: formatElapsed(Date.now() - startedAt), ...result })
-      }
+      onResolved={(result) => {
+        const ms = Date.now() - startedAt;
+        setPhase({
+          name: "resolved",
+          elapsed: formatElapsed(ms),
+          record: recordSolve(incident.id, ms),
+          ...result,
+        });
+      }}
     />
   );
 }

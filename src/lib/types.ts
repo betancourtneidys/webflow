@@ -81,6 +81,8 @@ export interface Incident {
   short: string;
   pattern: string;
   severity: "critical" | "high";
+  /** 1 Rookie · 2 Detective · 3 Inspector */
+  difficulty: 1 | 2 | 3;
   startedAt: string;
   startedAgo: string;
   summary: string;

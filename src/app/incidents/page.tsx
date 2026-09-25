@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { incidents } from "@/lib/incidents";
+import { CaseStamp, Difficulty } from "@/components/CaseFile";
 import { SiteHeader } from "@/components/SiteHeader";
 import { STATUS_TEXT, StatusDot } from "@/components/ui";
 
@@ -28,14 +29,20 @@ export default function IncidentsPage() {
                 href={`/incident/${incident.id}`}
                 className="group flex h-full flex-col rounded-2xl border border-line-strong bg-surface p-5 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-raised"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl">{incident.emoji}</span>
-                  <span className="font-mono text-xs text-faint">INC-{String(2041 + i)}</span>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="font-mono text-[11px] tracking-[0.14em] text-faint">CASE #{2041 + i}</div>
+                    <span className="mt-3 block text-2xl">{incident.emoji}</span>
+                  </div>
+                  <CaseStamp id={incident.id} />
                 </div>
                 <h2 className="mt-4 text-lg font-semibold tracking-tight">{incident.title}</h2>
                 <p className="mt-1 text-[13px] text-muted">
                   <span className="capitalize">{incident.severity}</span> · started {incident.startedAgo}
                 </p>
+                <div className="mt-3">
+                  <Difficulty level={incident.difficulty} />
+                </div>
                 <dl className="mt-5 space-y-2 border-t border-line pt-4">
                   {incident.headline.slice(0, 3).map((m) => (
                     <div key={m.label} className="flex items-center justify-between text-[13px]">

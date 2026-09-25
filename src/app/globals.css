@@ -79,6 +79,72 @@ body {
   animation: blink 1.6s ease-in-out infinite;
 }
 
+/* Detective lens on the landing preview: wanders on its own until hovered. */
+@property --lx {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 30%;
+}
+@property --ly {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 40%;
+}
+@keyframes lens-wander {
+  0%,
+  100% {
+    --lx: 22%;
+    --ly: 38%;
+  }
+  25% {
+    --lx: 62%;
+    --ly: 16%;
+  }
+  50% {
+    --lx: 70%;
+    --ly: 58%;
+  }
+  75% {
+    --lx: 34%;
+    --ly: 82%;
+  }
+}
+.lens-idle {
+  animation: lens-wander 14s ease-in-out infinite;
+}
+/* Radius = half of LENS in LandingPreview.tsx. */
+.lens-mask {
+  mask-image: radial-gradient(circle 62px at var(--lx) var(--ly), #000 70%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle 62px at var(--lx) var(--ly), #000 70%, transparent 100%);
+}
+
+/* "broken." flickers once on load and again on hover. */
+@keyframes glitch {
+  0%,
+  100% {
+    transform: none;
+    text-shadow: none;
+  }
+  25% {
+    transform: translate(-2px, 1px);
+    text-shadow: 2px 0 rgb(255 93 97 / 0.75), -2px 0 rgb(154 168 255 / 0.75);
+  }
+  50% {
+    transform: translate(2px, -1px);
+    text-shadow: -2px 0 rgb(255 93 97 / 0.75), 2px 0 rgb(154 168 255 / 0.75);
+  }
+  75% {
+    transform: translate(-1px, 0);
+  }
+}
+.glitch {
+  display: inline-block;
+  animation: glitch 0.42s steps(2) 0.7s 1;
+}
+.glitch:hover {
+  animation: glitch 0.4s steps(2) 1;
+}
+
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: rgb(255 255 255 / 0.12) transparent;
@@ -88,7 +154,10 @@ body {
   .edge-flow,
   .edge-flow-slow,
   .pulse-ring,
-  .blink {
+  .blink,
+  .lens-idle,
+  .glitch,
+  .glitch:hover {
     animation: none;
   }
 }

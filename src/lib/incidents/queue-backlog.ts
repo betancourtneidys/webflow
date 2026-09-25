@@ -7,6 +7,7 @@ export const queueBacklog: Incident = {
   short: "Queue backlog",
   pattern: "Poison messages retried forever",
   severity: "high",
+  difficulty: 2,
   startedAt: "14:05",
   startedAgo: "23 minutes ago",
   summary:

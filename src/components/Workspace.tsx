@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Check, Circle, Clock, FlaskConical, MousePointerClick, Search, Sparkles, X } from "lucide-react";
 import type { Incident } from "@/lib/types";
 import { fallbackAnswer } from "@/lib/assistant";
+import { formatElapsed } from "@/lib/format";
 import { ArchitectureDiagram } from "./ArchitectureDiagram";
 import { AssistantPanel, type ChatMessage } from "./AssistantPanel";
 import { HypothesisDialog } from "./HypothesisDialog";
@@ -14,11 +15,6 @@ import { Timeline } from "./Timeline";
 import { Logo, StatusDot } from "./ui";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-
-export function formatElapsed(ms: number) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
-}
 
 interface Props {
   incident: Incident;

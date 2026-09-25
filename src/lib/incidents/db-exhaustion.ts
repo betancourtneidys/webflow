@@ -7,6 +7,7 @@ export const dbExhaustion: Incident = {
   short: "Database exhaustion",
   pattern: "Connection pool exhaustion after a deploy",
   severity: "critical",
+  difficulty: 1,
   startedAt: "08:42",
   startedAgo: "8 minutes ago",
   summary:

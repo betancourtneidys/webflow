@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, Check, Eye, FlaskConical, Search, Wrench } from "lucide-react";
+import { ArrowRight, Eye, FlaskConical, Search, Wrench } from "lucide-react";
 import { incidents } from "@/lib/incidents";
-import { ArchitectureDiagram } from "@/components/ArchitectureDiagram";
+import { CaseStamp, Difficulty } from "@/components/CaseFile";
+import { LandingPreview } from "@/components/LandingPreview";
+import { OnCallQuotes } from "@/components/OnCallQuotes";
 import { SiteHeader } from "@/components/SiteHeader";
-import { CapacityBar, Logo, STATUS_TEXT, StatusDot } from "@/components/ui";
-
-const featured = incidents[0];
+import { Logo, StatusDot } from "@/components/ui";
 
 const STEPS = [
   { icon: Eye, title: "Observe", text: "An alert fires. You see the blast radius, not the reason." },
@@ -13,56 +13,6 @@ const STEPS = [
   { icon: FlaskConical, title: "Understand", text: "Connect the evidence into a causal chain." },
   { icon: Wrench, title: "Resolve", text: "Choose the fix that removes the cause, not the symptom." },
 ];
-
-function ProductPreview() {
-  const rds = featured.resources.find((r) => r.id === "rds")!;
-  const connections = rds.metrics[0];
-  return (
-    <div className="relative mx-auto mt-16 w-full max-w-5xl">
-      <div className="absolute -inset-x-10 -top-10 bottom-0 bg-[radial-gradient(ellipse_at_top,rgb(154_168_255/0.10),transparent_60%)]" />
-      <div className="relative overflow-hidden rounded-2xl border border-line-strong bg-surface shadow-[0_40px_120px_-40px_rgb(0_0_0/0.9)]">
-        <div className="flex items-center gap-3 border-b border-line px-4 py-3">
-          <Logo size={18} />
-          <span className="h-4 w-px bg-line-strong" />
-          <StatusDot status="critical" pulse />
-          <span className="text-[13px] font-medium">{featured.title}</span>
-          <span className="ml-auto font-mono text-[12px] tabular-nums text-muted">02:41 · 4/5 evidence</span>
-        </div>
-        <div className="grid md:grid-cols-[minmax(0,1fr)_280px]">
-          <div className="relative h-[340px] sm:h-[380px]">
-            <div className="grid-dots absolute inset-0" />
-            <div className="absolute inset-4">
-              <ArchitectureDiagram incident={featured} selected="rds" inspected={["alb", "lambda", "deploy"]} compact />
-            </div>
-          </div>
-          <div className="hidden space-y-3 border-l border-line p-4 md:block">
-            <div className="text-[11px] uppercase tracking-[0.12em] text-muted">{rds.service}</div>
-            <div className="text-sm font-semibold">{rds.name}</div>
-            <div className="rounded-lg border border-line bg-raised/60 p-3">
-              <div className="text-[11px] text-muted">{connections.label}</div>
-              <div className={`mt-1 font-mono text-lg ${STATUS_TEXT[connections.status]}`}>{connections.value}</div>
-              <div className="mt-3">
-                <CapacityBar value={connections.bar!.value} max={connections.bar!.max} status={connections.status} />
-              </div>
-            </div>
-            <div className="rounded-lg border border-line p-3 text-[12.5px] leading-relaxed text-fg/80">
-              <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-accent">Assistant observation</div>
-              Database connections are approaching the configured limit.
-            </div>
-            <ul className="space-y-1.5 pt-1 text-[12px]">
-              {featured.evidence.slice(0, 3).map((e) => (
-                <li key={e.id} className="flex gap-2">
-                  <Check className="mt-0.5 size-3 shrink-0 text-accent" strokeWidth={3} />
-                  {e.label}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function Home() {
   return (
@@ -82,7 +32,7 @@ export default function Home() {
             <ArrowRight className="size-3" />
           </Link>
           <h1 className="mt-7 text-5xl font-semibold leading-[1.02] tracking-[-0.035em] sm:text-7xl">
-            Production is broken.
+            Production is <span className="glitch">broken.</span>
             <br />
             <span className="text-muted">Find out why.</span>
           </h1>
@@ -102,7 +52,7 @@ export default function Home() {
             </Link>
           </div>
         </div>
-        <ProductPreview />
+        <LandingPreview incident={incidents[0]} />
       </section>
 
       {/* Loop */}
@@ -137,16 +87,25 @@ export default function Home() {
         <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Built around real cloud failure patterns</h2>
         <p className="mt-3 max-w-xl text-muted">The kind of incidents that page you at 3 a.m. — reproduced with realistic metrics, logs and timelines.</p>
         <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {incidents.map((incident) => (
+          {incidents.map((incident, i) => (
             <Link
               key={incident.id}
               href={`/incident/${incident.id}`}
-              className="group flex flex-col rounded-2xl border border-line-strong bg-surface p-6 transition hover:-translate-y-0.5 hover:border-white/20"
+              className="group relative flex flex-col rounded-2xl border border-line-strong bg-surface p-6 transition hover:-translate-y-0.5 hover:border-white/20"
             >
-              <span className="text-3xl">{incident.emoji}</span>
-              <h3 className="mt-5 text-lg font-semibold">{incident.short}</h3>
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="font-mono text-[11px] tracking-[0.14em] text-faint">CASE #{2041 + i}</div>
+                  <span className="mt-3 block text-3xl">{incident.emoji}</span>
+                </div>
+                <CaseStamp id={incident.id} />
+              </div>
+              <h3 className="mt-4 text-lg font-semibold">{incident.short}</h3>
               <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted">{incident.pattern}</p>
-              <div className="mt-6 flex flex-wrap gap-1.5">
+              <div className="mt-4">
+                <Difficulty level={incident.difficulty} />
+              </div>
+              <div className="mt-5 flex flex-wrap gap-1.5">
                 {incident.resources.slice(0, 4).map((r) => (
                   <span key={r.id} className="rounded-md border border-line px-2 py-0.5 font-mono text-[11px] text-muted">
                     {r.service.split(" · ")[0]}
@@ -154,7 +113,7 @@ export default function Home() {
                 ))}
               </div>
               <span className="mt-6 flex items-center gap-1 text-sm font-medium text-fg/80 transition group-hover:text-fg">
-                Investigate
+                Open case
                 <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
               </span>
             </Link>
@@ -177,6 +136,9 @@ export default function Home() {
               Start investigation
               <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
             </Link>
+            <div className="mt-10">
+              <OnCallQuotes />
+            </div>
           </div>
         </div>
       </section>

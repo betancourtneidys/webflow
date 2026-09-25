@@ -7,6 +7,7 @@ export const oidcTrust: Incident = {
   short: "IAM deployment failure",
   pattern: "OIDC subject mismatch in an IAM trust policy",
   severity: "high",
+  difficulty: 3,
   startedAt: "10:14",
   startedAgo: "31 minutes ago",
   summary:

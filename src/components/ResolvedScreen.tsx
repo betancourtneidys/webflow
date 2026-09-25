@@ -12,6 +12,7 @@ interface Props {
   elapsed: string;
   evidence: number;
   attempts: number;
+  record: "first" | "best" | null;
   onReplay: () => void;
 }
 
@@ -21,7 +22,7 @@ const BURST = Array.from({ length: 18 }, (_, i) => {
   return { x: Math.cos(angle) * distance, y: Math.sin(angle) * distance, color: ["#3ecf8e", "#9aa8ff", "#e8eaf0"][i % 3] };
 });
 
-export function ResolvedScreen({ incident, next, elapsed, evidence, attempts, onReplay }: Props) {
+export function ResolvedScreen({ incident, next, elapsed, evidence, attempts, record, onReplay }: Props) {
   const stats = [
     { label: "Investigation time", value: elapsed },
     { label: "Evidence collected", value: `${evidence} / ${incident.evidence.length}` },
@@ -68,6 +69,16 @@ export function ResolvedScreen({ incident, next, elapsed, evidence, attempts, on
           <div className="mt-7 text-[11px] font-medium uppercase tracking-[0.2em] text-healthy">🎉 Incident resolved</div>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{incident.rootCause.title}</h1>
           <p className="mt-2 text-sm text-muted">Root cause identified</p>
+          {record && (
+            <motion.div
+              initial={{ opacity: 0, scale: 1.6, rotate: -14 }}
+              animate={{ opacity: 1, scale: 1, rotate: -6 }}
+              transition={{ delay: 0.9, type: "spring", stiffness: 420, damping: 18 }}
+              className="mt-4 inline-block rounded-md border-2 border-healthy/70 px-2.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-healthy"
+            >
+              {record === "first" ? "Case closed · first solve" : "New personal best"}
+            </motion.div>
+          )}
 
           <div className="mt-8 grid grid-cols-3 divide-x divide-line rounded-2xl border border-line-strong bg-surface/80 backdrop-blur">
             {stats.map((s, i) => (
